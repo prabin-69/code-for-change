@@ -1,0 +1,441 @@
+// Prisma Schema for Sewaghar – Home & Professional Services Marketplace
+// Run: prisma migrate dev --name init
+
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  CUSTOMER
+  PROFESSIONAL
+  ADMIN
+  SUPER_ADMIN
+  SUPPORT_ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  VERIFICATION_FEE
+  FEATURED
+}
+
+// ---------------------------------------------------------------------------
+// Core user / auth
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(uuid())
+  phone_number  String    @unique
+  first_name    String?
+  last_name     String?
+  photo_url     String?
+  role          UserRole  @default(CUSTOMER)
+  role_selected Boolean   @default(false)
+  is_active     Boolean   @default(true)
+  last_login_at DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Firebase Cloud Messaging tokens for push notifications
+  fcm_tokens String[]
+
+  // Relations
+  refresh_tokens       RefreshToken[]
+  professional_profile ProfessionalProfile?
+
+  // Service-request relations
+  customer_requests ServiceRequest[] @relation("customer_requests")
+
+  // Job relations
+  jobs_as_professional Job[] @relation("professional_jobs")
+  jobs_as_customer     Job[] @relation("customer_jobs")
+
+  // RequestOffer relation
+  offers RequestOffer[] @relation("professional_offers")
+
+  // Favorite relations
+  favorites_as_customer     Favorite[] @relation("customer_favorites")
+  favorites_as_professional Favorite[] @relation("professional_favorites")
+
+  // Review relations
+  reviews_written  Review[] @relation("reviewer")
+  reviews_received Review[] @relation("professional_reviews")
+
+  // Payment / subscription
+  payments      Payment[]
+  subscriptions Subscription[]
+
+  // Notification
+  notifications Notification[]
+
+  // Reports
+  reports_filed    Report[] @relation("reporter")
+  reports_received Report[] @relation("reported")
+
+  // Location tracking
+  locations ProfessionalLocation[]
+
+  // Chat messages
+  sent_messages     Message[] @relation("sender_messages")
+  received_messages Message[] @relation("receiver_messages")
+
+  @@map("User")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  user_id    String
+  user       User      @relation(fields: [user_id], references: [id])
+  token_hash String    @unique
+  device_info Json?
+  expires_at DateTime
+  revoked_at DateTime?
+  created_at DateTime  @default(now())
+
+  @@map("RefreshToken")
+}
+
+// ---------------------------------------------------------------------------
+// Professional profile
+// ---------------------------------------------------------------------------
+
+model ProfessionalProfile {
+  user_id               String      @id
+  user                  User        @relation(fields: [user_id], references: [id])
+  category_id           String?
+  category              Category?   @relation(fields: [category_id], references: [id])
+  profession_id         String?
+  profession            Profession? @relation(fields: [profession_id], references: [id])
+  bio                   String?
+  skills                String[]
+  experience_years      Int?
+  about                 String?
+  availability          String      @default("available") // available, busy, offline
+  verification_status   String      @default("pending")   // pending, approved, rejected
+  verification_fee_paid Boolean     @default(false)
+  is_featured           Boolean     @default(false)
+  featured_expires      DateTime?
+  average_rating        Float       @default(0)
+  total_jobs            Int         @default(0)
+  total_reviews         Int         @default(0)
+  created_at            DateTime    @default(now())
+  updated_at            DateTime    @updatedAt
+
+  certificates          Certificate[]
+  portfolio             Portfolio[]
+  verification_requests VerificationRequest[]
+
+  @@map("ProfessionalProfile")
+}
+
+model Certificate {
+  id              String              @id @default(uuid())
+  professional_id String
+  professional    ProfessionalProfile @relation(fields: [professional_id], references: [user_id])
+  name            String
+  issuing_org     String?
+  file_url        String
+  issued_date     DateTime?
+  created_at      DateTime            @default(now())
+
+  @@map("Certificate")
+}
+
+model Portfolio {
+  id              String              @id @default(uuid())
+  professional_id String
+  professional    ProfessionalProfile @relation(fields: [professional_id], references: [user_id])
+  title           String?
+  description     String?
+  image_url       String
+  created_at      DateTime            @default(now())
+
+  @@map("Portfolio")
+}
+
+model VerificationRequest {
+  id               String              @id @default(uuid())
+  professional_id  String              @unique
+  professional     ProfessionalProfile @relation(fields: [professional_id], references: [user_id])
+  status           String              @default("pending") // pending, approved, rejected
+  submitted_at     DateTime            @default(now())
+  reviewed_at      DateTime?
+  reviewed_by      String?             // admin user id
+  rejection_reason String?
+  admin_notes      String?
+
+  @@map("VerificationRequest")
+}
+
+// ---------------------------------------------------------------------------
+// Categories & professions
+// ---------------------------------------------------------------------------
+
+model Category {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  icon       String?
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  professions           Profession[]
+  requests              ServiceRequest[]
+  professional_profiles ProfessionalProfile[]
+
+  @@map("Category")
+}
+
+model Profession {
+  id          String   @id @default(uuid())
+  category_id String
+  category    Category @relation(fields: [category_id], references: [id])
+  name        String
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  professional_profiles ProfessionalProfile[]
+  requests              ServiceRequest[]
+
+  @@map("Profession")
+}
+
+// ---------------------------------------------------------------------------
+// Service requests & jobs
+// ---------------------------------------------------------------------------
+
+model ServiceRequest {
+  id                  String     @id @default(uuid())
+  customer_id         String
+  customer            User       @relation("customer_requests", fields: [customer_id], references: [id])
+  category_id         String
+  category            Category   @relation(fields: [category_id], references: [id])
+  profession_id       String
+  profession          Profession @relation(fields: [profession_id], references: [id])
+  description         String
+  // PostGIS geometry – stored as raw bytes; spatial queries use $queryRaw with ST_ functions
+  location            Bytes?
+  address             String?
+  status              String     @default("pending") // pending, accepted, on_the_way, in_progress, completed, cancelled
+  accepted_by         String?    // professional user id
+  scheduled_time      DateTime?
+  cancelled_by        String?    // 'customer', 'professional', 'system'
+  cancellation_reason String?
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
+
+  job    Job?
+  offers RequestOffer[]
+
+  @@map("ServiceRequest")
+}
+
+model Job {
+  id              String         @id @default(uuid())
+  request_id      String         @unique
+  request         ServiceRequest @relation(fields: [request_id], references: [id])
+  professional_id String
+  professional    User           @relation("professional_jobs", fields: [professional_id], references: [id])
+  customer_id     String
+  customer        User           @relation("customer_jobs", fields: [customer_id], references: [id])
+  status          String         @default("on_the_way") // on_the_way, in_progress, completed, cancelled
+  started_at      DateTime       @default(now())
+  completed_at    DateTime?
+  before_photos   String[]
+  after_photos    String[]
+
+  review   Review?
+  reports  Report[]
+  messages Message[]
+
+  @@map("Job")
+}
+
+model RequestOffer {
+  id              String         @id @default(uuid())
+  request_id      String
+  request         ServiceRequest @relation(fields: [request_id], references: [id])
+  professional_id String
+  professional    User           @relation("professional_offers", fields: [professional_id], references: [id])
+  sent_at         DateTime       @default(now())
+  viewed_at       DateTime?
+  response        String         @default("none") // none, accepted, rejected, expired
+  accepted_at     DateTime?
+  rejected_at     DateTime?
+  expired_at      DateTime?
+
+  @@unique([request_id, professional_id])
+  @@map("RequestOffer")
+}
+
+model Favorite {
+  customer_id     String
+  customer        User     @relation("customer_favorites", fields: [customer_id], references: [id])
+  professional_id String
+  professional    User     @relation("professional_favorites", fields: [professional_id], references: [id])
+  created_at      DateTime @default(now())
+
+  @@id([customer_id, professional_id])
+  @@map("Favorite")
+}
+
+model Review {
+  id              String   @id @default(uuid())
+  job_id          String   @unique
+  job             Job      @relation(fields: [job_id], references: [id])
+  reviewer_id     String
+  reviewer        User     @relation("reviewer", fields: [reviewer_id], references: [id])
+  professional_id String
+  professional    User     @relation("professional_reviews", fields: [professional_id], references: [id])
+  rating          Int      // 1–5
+  comment         String?
+  created_at      DateTime @default(now())
+
+  @@map("Review")
+}
+
+// ---------------------------------------------------------------------------
+// Chat / Messages
+// ---------------------------------------------------------------------------
+
+model Message {
+  id          String   @id @default(uuid())
+  sender_id   String
+  sender      User     @relation("sender_messages", fields: [sender_id], references: [id])
+  receiver_id String
+  receiver    User     @relation("receiver_messages", fields: [receiver_id], references: [id])
+  job_id      String?
+  job         Job?     @relation(fields: [job_id], references: [id])
+  content     String
+  type        String   @default("text") // text, image, location
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([sender_id, receiver_id])
+  @@index([job_id])
+  @@map("messages")
+}
+
+// ---------------------------------------------------------------------------
+// Payments & subscriptions
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id             String        @id @default(uuid())
+  user_id        String
+  user           User          @relation(fields: [user_id], references: [id])
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("NPR")
+  gateway        String        // 'esewa', 'khalti', 'bank'
+  transaction_id String?       @unique
+  status         PaymentStatus @default(PENDING)
+  type           PaymentType
+  related_id     String?       // subscription_id etc.
+  metadata       Json?
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+
+  subscription Subscription? @relation(fields: [related_id], references: [id])
+  logs         PaymentLog[]
+
+  @@map("Payment")
+}
+
+model PaymentLog {
+  id               String   @id @default(uuid())
+  payment_id       String
+  payment          Payment  @relation(fields: [payment_id], references: [id])
+  gateway          String
+  request_payload  Json
+  response_payload Json
+  status_code      Int?
+  created_at       DateTime @default(now())
+
+  @@map("PaymentLog")
+}
+
+model Subscription {
+  id          String    @id @default(uuid())
+  customer_id String
+  customer    User      @relation(fields: [customer_id], references: [id])
+  plan        String    // 'basic', 'pro', 'premium'
+  status      String    @default("active") // active, expired, cancelled
+  starts_at   DateTime  @default(now())
+  expires_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  payments Payment[]
+
+  @@map("Subscription")
+}
+
+// ---------------------------------------------------------------------------
+// Notifications & Reports
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id         String   @id @default(uuid())
+  user_id    String?
+  user       User?    @relation(fields: [user_id], references: [id])
+  title      String
+  body       String
+  type       String   @default("general")
+  data       Json?
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@map("Notification")
+}
+
+model Report {
+  id          String    @id @default(uuid())
+  reporter_id String
+  reporter    User      @relation("reporter", fields: [reporter_id], references: [id])
+  reported_id String
+  reported    User      @relation("reported", fields: [reported_id], references: [id])
+  job_id      String?
+  job         Job?      @relation(fields: [job_id], references: [id])
+  reason      String
+  description String?
+  status      String    @default("pending") // pending, reviewed, resolved
+  admin_note  String?
+  resolved_at DateTime?
+  created_at  DateTime  @default(now())
+
+  @@map("Report")
+}
+
+model ProfessionalLocation {
+  id              String   @id @default(uuid())
+  professional_id String
+  professional    User     @relation(fields: [professional_id], references: [id])
+  latitude        Decimal  @db.Decimal(10, 8)
+  longitude       Decimal  @db.Decimal(11, 8)
+  accuracy        Decimal? @db.Decimal(5, 2)
+  timestamp       DateTime @default(now())
+
+  @@index([professional_id])
+  @@index([timestamp])
+  @@map("ProfessionalLocation")
+}
