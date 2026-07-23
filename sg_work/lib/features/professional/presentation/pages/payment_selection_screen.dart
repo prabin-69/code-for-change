@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/payment_bloc.dart';
 
+import '../../../payments/presentation/bloc/payment_bloc.dart';
+
+import 'payment_result_screen.dart';
+import 'payment_webview_screen.dart';
+import 'bank_payment_instructions_screen.dart';
 class PaymentSelectionScreen extends StatelessWidget {
   final double amount;
   final String type; // 'SUBSCRIPTION', 'VERIFICATION_FEE', 'FEATURED'

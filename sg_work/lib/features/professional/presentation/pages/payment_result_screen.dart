@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/payment.dart';
+import '../../../payments/domain/entities/payment.dart';
 
 class PaymentResultScreen extends StatelessWidget {
   final bool success;

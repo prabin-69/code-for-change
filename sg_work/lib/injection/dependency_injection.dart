@@ -54,20 +54,67 @@ import '../features/professional/domain/usecases/update_job_status.dart';
 import '../features/professional/domain/usecases/get_performance.dart';
 import '../features/professional/presentation/bloc/professional_bloc.dart';
 
+// Payments
+import '../features/payments/data/datasources/payment_remote_datasource.dart';
+import '../features/payments/data/repositories/payment_repository_impl.dart';
+import '../features/payments/domain/repositories/payment_repository.dart';
+import '../features/payments/domain/usecases/initiate_payment.dart';
+import '../features/payments/domain/usecases/verify_payment.dart';
+import '../features/payments/domain/usecases/get_my_payments.dart';
+import '../features/payments/presentation/bloc/payment_bloc.dart';
+
+// Search
+import '../features/search/data/datasources/search_remote_datasource.dart';
+import '../features/search/data/repositories/search_repository_impl.dart';
+import '../features/search/domain/repositories/search_repository.dart';
+import '../features/search/domain/usecases/search_professionals.dart';
+import '../features/search/presentation/bloc/search_bloc.dart';
+
 final GetIt locator = GetIt.instance;
 
 Future<void> setupLocator() async {
-  // ─── Network ───────────────────────────────────────────────────────────────
+  // ================= SEARCH =================
+
+locator.registerLazySingleton<SearchRemoteDataSource>(
+  () => SearchRemoteDataSource(
+    dio: locator<Dio>(),
+  ),
+);
+
+locator.registerLazySingleton<SearchRepository>(
+  () => SearchRepositoryImpl(
+    remoteDataSource: locator<SearchRemoteDataSource>(),
+  ),
+);
+
+locator.registerLazySingleton<SearchProfessionals>(
+  () => SearchProfessionals(
+    locator<SearchRepository>(),
+  ),
+);
+
+locator.registerFactory<SearchBloc>(
+  () => SearchBloc(
+    searchProfessionals: locator<SearchProfessionals>(),
+  ),
+);
+
+  // Network
   locator.registerLazySingleton<DioClient>(() => DioClient());
   locator.registerLazySingleton<Dio>(() => locator<DioClient>().dio);
 
-  // ─── Auth ──────────────────────────────────────────────────────────────────
+  // ================= AUTH =================
+
   locator.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSource(dio: locator<Dio>()),
   );
+
   locator.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(remoteDataSource: locator<AuthRemoteDataSource>()),
+    () => AuthRepositoryImpl(
+      remoteDataSource: locator<AuthRemoteDataSource>(),
+    ),
   );
+
   locator.registerLazySingleton(() => SendOtp(locator<AuthRepository>()));
   locator.registerLazySingleton(() => VerifyOtp(locator<AuthRepository>()));
   locator.registerLazySingleton(() => SelectRole(locator<AuthRepository>()));
@@ -75,85 +122,138 @@ Future<void> setupLocator() async {
   locator.registerLazySingleton(() => Logout(locator<AuthRepository>()));
   locator.registerLazySingleton(() => LogoutAll(locator<AuthRepository>()));
   locator.registerLazySingleton(() => GetCurrentUser(locator<AuthRepository>()));
-  locator.registerFactory(() => AuthBloc(
-        sendOtp: locator<SendOtp>(),
-        verifyOtp: locator<VerifyOtp>(),
-        selectRole: locator<SelectRole>(),
-        refreshToken: locator<RefreshToken>(),
-        logout: locator<Logout>(),
-        logoutAll: locator<LogoutAll>(),
-        getCurrentUser: locator<GetCurrentUser>(),
-      ));
 
-  // ─── Customer ──────────────────────────────────────────────────────────────
+  locator.registerFactory(
+    () => AuthBloc(
+      sendOtp: locator(),
+      verifyOtp: locator(),
+      selectRole: locator(),
+      refreshToken: locator(),
+      logout: locator(),
+      logoutAll: locator(),
+      getCurrentUser: locator(),
+    ),
+  );
+
+  // ================= CUSTOMER =================
+
   locator.registerLazySingleton<CustomerRemoteDataSource>(
     () => CustomerRemoteDataSource(dio: locator<Dio>()),
   );
-  locator.registerLazySingleton<CustomerRepository>(
-    () => CustomerRepositoryImpl(remoteDataSource: locator<CustomerRemoteDataSource>()),
-  );
-  locator.registerLazySingleton(() => GetCategories(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => GetProfessionsByCategory(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => CreateRequest(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => GetMyRequests(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => GetRequestById(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => CancelRequest(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => GetFavorites(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => AddFavorite(locator<CustomerRepository>()));
-  locator.registerLazySingleton(() => RemoveFavorite(locator<CustomerRepository>()));
-  locator.registerFactory(() => CustomerBloc(
-        getCategories: locator<GetCategories>(),
-        getProfessionsByCategory: locator<GetProfessionsByCategory>(),
-        createRequest: locator<CreateRequest>(),
-        getMyRequests: locator<GetMyRequests>(),
-        getRequestById: locator<GetRequestById>(),
-        cancelRequest: locator<CancelRequest>(),
-        getFavorites: locator<GetFavorites>(),
-        addFavorite: locator<AddFavorite>(),
-        removeFavorite: locator<RemoveFavorite>(),
-      ));
 
-  // ─── Professional ──────────────────────────────────────────────────────────
+  locator.registerLazySingleton<CustomerRepository>(
+    () => CustomerRepositoryImpl(
+      remoteDataSource: locator<CustomerRemoteDataSource>(),
+    ),
+  );
+
+  locator.registerLazySingleton(() => GetCategories(locator()));
+  locator.registerLazySingleton(() => GetProfessionsByCategory(locator()));
+  locator.registerLazySingleton(() => CreateRequest(locator()));
+  locator.registerLazySingleton(() => GetMyRequests(locator()));
+  locator.registerLazySingleton(() => GetRequestById(locator()));
+  locator.registerLazySingleton(() => CancelRequest(locator()));
+  locator.registerLazySingleton(() => GetFavorites(locator()));
+  locator.registerLazySingleton(() => AddFavorite(locator()));
+  locator.registerLazySingleton(() => RemoveFavorite(locator()));
+
+  locator.registerFactory(
+    () => CustomerBloc(
+      getCategories: locator(),
+      getProfessionsByCategory: locator(),
+      createRequest: locator(),
+      getMyRequests: locator(),
+      getRequestById: locator(),
+      cancelRequest: locator(),
+      getFavorites: locator(),
+      addFavorite: locator(),
+      removeFavorite: locator(),
+    ),
+  );
+
+  // ================= PROFESSIONAL =================
+
   locator.registerLazySingleton<ProfessionalRemoteDataSource>(
     () => ProfessionalRemoteDataSource(dio: locator<Dio>()),
   );
+
   locator.registerLazySingleton<ProfessionalRepository>(
-    () => ProfessionalRepositoryImpl(remoteDataSource: locator<ProfessionalRemoteDataSource>()),
+    () => ProfessionalRepositoryImpl(
+      remoteDataSource: locator<ProfessionalRemoteDataSource>(),
+    ),
   );
-  locator.registerLazySingleton(() => GetProfile(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => UpdateProfile(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => UpdateAvailability(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => SubmitVerification(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetVerificationStatus(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => AddCertificate(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetCertificates(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => DeleteCertificate(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => AddPortfolio(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetPortfolio(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => DeletePortfolio(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetPendingRequests(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => AcceptRequest(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetMyJobs(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetJobDetails(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => UpdateJobStatus(locator<ProfessionalRepository>()));
-  locator.registerLazySingleton(() => GetPerformance(locator<ProfessionalRepository>()));
-  locator.registerFactory(() => ProfessionalBloc(
-        getProfile: locator<GetProfile>(),
-        updateProfile: locator<UpdateProfile>(),
-        updateAvailability: locator<UpdateAvailability>(),
-        submitVerification: locator<SubmitVerification>(),
-        getVerificationStatus: locator<GetVerificationStatus>(),
-        addCertificate: locator<AddCertificate>(),
-        getCertificates: locator<GetCertificates>(),
-        deleteCertificate: locator<DeleteCertificate>(),
-        addPortfolio: locator<AddPortfolio>(),
-        getPortfolio: locator<GetPortfolio>(),
-        deletePortfolio: locator<DeletePortfolio>(),
-        getPendingRequests: locator<GetPendingRequests>(),
-        acceptRequest: locator<AcceptRequest>(),
-        getMyJobs: locator<GetMyJobs>(),
-        getJobDetails: locator<GetJobDetails>(),
-        updateJobStatus: locator<UpdateJobStatus>(),
-        getPerformance: locator<GetPerformance>(),
-      ));
+
+  locator.registerLazySingleton(() => GetProfile(locator()));
+  locator.registerLazySingleton(() => UpdateProfile(locator()));
+  locator.registerLazySingleton(() => UpdateAvailability(locator()));
+  locator.registerLazySingleton(() => SubmitVerification(locator()));
+  locator.registerLazySingleton(() => GetVerificationStatus(locator()));
+  locator.registerLazySingleton(() => AddCertificate(locator()));
+  locator.registerLazySingleton(() => GetCertificates(locator()));
+  locator.registerLazySingleton(() => DeleteCertificate(locator()));
+  locator.registerLazySingleton(() => AddPortfolio(locator()));
+  locator.registerLazySingleton(() => GetPortfolio(locator()));
+  locator.registerLazySingleton(() => DeletePortfolio(locator()));
+  locator.registerLazySingleton(() => GetPendingRequests(locator()));
+  locator.registerLazySingleton(() => AcceptRequest(locator()));
+  locator.registerLazySingleton(() => GetMyJobs(locator()));
+  locator.registerLazySingleton(() => GetJobDetails(locator()));
+  locator.registerLazySingleton(() => UpdateJobStatus(locator()));
+  locator.registerLazySingleton(() => GetPerformance(locator()));
+
+  locator.registerFactory(
+    () => ProfessionalBloc(
+      getProfile: locator(),
+      updateProfile: locator(),
+      updateAvailability: locator(),
+      submitVerification: locator(),
+      getVerificationStatus: locator(),
+      addCertificate: locator(),
+      getCertificates: locator(),
+      deleteCertificate: locator(),
+      addPortfolio: locator(),
+      getPortfolio: locator(),
+      deletePortfolio: locator(),
+      getPendingRequests: locator(),
+      acceptRequest: locator(),
+      getMyJobs: locator(),
+      getJobDetails: locator(),
+      updateJobStatus: locator(),
+      getPerformance: locator(),
+    ),
+  );
+
+  // ================= PAYMENTS =================
+
+locator.registerLazySingleton<PaymentRemoteDataSource>(
+  () => PaymentRemoteDataSourceImpl(
+    dioClient: locator<DioClient>(),
+  ),
+);
+
+locator.registerLazySingleton<PaymentRepository>(
+  () => PaymentRepositoryImpl(
+    remoteDataSource: locator<PaymentRemoteDataSource>(),
+  ),
+);
+
+locator.registerLazySingleton<InitiatePayment>(
+  () => InitiatePayment(locator<PaymentRepository>()),
+);
+
+locator.registerLazySingleton<VerifyPayment>(
+  () => VerifyPayment(locator<PaymentRepository>()),
+);
+
+locator.registerLazySingleton<GetMyPayments>(
+  () => GetMyPayments(locator<PaymentRepository>()),
+);
+
+locator.registerFactory<PaymentBloc>(
+  () => PaymentBloc(
+    initiatePayment: locator<InitiatePayment>(),
+    verifyPayment: locator<VerifyPayment>(),
+    getMyPayments: locator<GetMyPayments>(),
+  ),
+);
 }

@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../domain/repositories/payment_repository.dart';
+import '../../domain/entities/payment.dart';
 import '../datasources/payment_remote_datasource.dart';
 import '../models/payment_model.dart';
 

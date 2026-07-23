@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => GetIt.I<AuthBloc>()..add(CheckAuthStatusEvent()),
+      create: (context) => GetIt.I<AuthBloc>(),
       child: MaterialApp.router(
         title: 'Sewaghar',
         theme: AppTheme.lightTheme,

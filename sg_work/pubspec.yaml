@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.0
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -13,73 +13,62 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
-  # State management
+  # State Management
   flutter_bloc: ^8.1.6
   equatable: ^2.0.5
 
-  # DI
+  # Dependency Injection
   get_it: ^7.7.0
 
   # Networking
   dio: ^5.7.0
-
-  # Functional programming
   dartz: ^0.10.1
 
   # Routing
   go_router: ^14.2.0
 
-  # Secure storage
+  # Secure Storage
   flutter_secure_storage: ^9.2.2
 
   # Logging
   logger: ^2.4.0
 
-  # PIN input
+  # Authentication
   pin_code_fields: ^8.0.1
-
-  # Phone input
   intl_phone_number_input: ^0.7.4
 
   # Location
   geolocator: ^12.0.0
   geocoding: ^3.0.0
-
-  # Maps
   google_maps_flutter: ^2.6.0
 
-  # Image picker
+  # Images
   image_picker: ^1.1.2
-
-  # Cached images
   cached_network_image: ^3.4.1
 
-  # Rating bar
+  # UI
   flutter_rating_bar: ^4.0.1
+  flutter_svg: ^2.0.10+1
 
-  # URL launcher
+  # URL
   url_launcher: ^6.3.0
 
-  # WebView (for payment gateways)
+  # WebView
   webview_flutter: ^4.4.4
 
   # Connectivity
   connectivity_plus: ^6.0.3
 
-  # Shared preferences
+  # Local Storage
   shared_preferences: ^2.3.2
-
-  # SVG supportclear
-  
-  flutter_svg: ^2.0.10+1
 
   # Internationalization
   intl: ^0.19.0
 
-  # Permission handler
+  # Permissions
   permission_handler: ^11.3.1
 
-  # Firebase (push notifications)
+  # Firebase
   firebase_core: ^4.0.0
   firebase_auth: ^6.0.0
   cloud_firestore: ^6.0.0
@@ -88,16 +77,26 @@ dependencies:
   firebase_analytics: ^12.0.0
   firebase_crashlytics: ^5.0.0
 
-  # Local notifications
+  # Notifications
   flutter_local_notifications: ^17.1.2
 
-  # Socket.IO client (real-time chat)
+  # Socket
   socket_io_client: ^2.0.3+1
+
+  # JSON Serialization
+  json_annotation: ^4.9.0
+
+  # QR Code
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^4.0.0
+
+  build_runner: ^2.4.13
+  json_serializable: ^6.8.0
 
 flutter:
   uses-material-design: true
