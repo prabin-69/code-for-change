@@ -11,6 +11,7 @@ import '../../features/auth/presentation/pages/role_selection_screen.dart';
 import '../../features/home/presentation/pages/home_screen.dart';
 import '../../features/home/presentation/pages/guest_home_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
+
 import '../../features/auth/presentation/pages/category_selection_screen.dart';
 import '../../features/auth/presentation/pages/request_description_screen.dart';
 import '../../features/auth/presentation/pages/my_requests_screen.dart';
@@ -24,24 +25,32 @@ import '../../features/search/professional_dashboard.dart';
 import '../../features/search/pending_requests_screen.dart';
 import '../../features/search/job_management_screen.dart';
 import '../../features/search/presentation/pages/search_result_screen.dart';
+import '../../features/search/presentation/pages/professional_preview_screen.dart';
+
+
+// CHAT
+import '../../features/chat/presentation/pages/chat_screen.dart';
+import '../../features/customer/presentation/pages/booking_screen.dart';
 
 
 class AppRouter {
+
 
   static final _rootNavigatorKey =
       GlobalKey<NavigatorState>();
 
 
+
   static final router = GoRouter(
+
 
     navigatorKey: _rootNavigatorKey,
 
 
-    // App opens with Guest Home
     initialLocation: '/guest',
 
 
-    // No redirect for guest mode
+
     redirect: (context, state) {
 
       return null;
@@ -49,41 +58,51 @@ class AppRouter {
     },
 
 
+
     routes: [
 
 
+
       // ================= GUEST =================
+
 
       GoRoute(
 
         path: '/guest',
 
-        builder: (context, state) =>
+        builder: (context,state) =>
             const GuestHomeScreen(),
 
       ),
-     
+
+
+
+
       // ================= SETTINGS =================
 
-GoRoute(
 
-  path: '/settings',
+      GoRoute(
 
-  builder: (context, state) =>
-      const SettingsScreen(),
+        path:'/settings',
 
-),
+        builder:(context,state)=>
+            const SettingsScreen(),
+
+      ),
+
+
 
 
 
       // ================= AUTH =================
 
 
+
       GoRoute(
 
         path: RouteConstants.splash,
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const SplashScreen(),
 
       ),
@@ -94,7 +113,7 @@ GoRoute(
 
         path: RouteConstants.phoneLogin,
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const PhoneLoginScreen(),
 
       ),
@@ -105,14 +124,20 @@ GoRoute(
 
         path: RouteConstants.otpVerification,
 
-        builder: (context, state) {
+        builder:(context,state){
+
 
           final phone =
               state.extra as String? ?? '';
 
+
+
           return OtpVerificationScreen(
+
             phoneNumber: phone,
+
           );
+
 
         },
 
@@ -125,7 +150,7 @@ GoRoute(
 
         path: RouteConstants.roleSelection,
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const RoleSelectionScreen(),
 
       ),
@@ -133,18 +158,19 @@ GoRoute(
 
 
 
+
       // ================= HOME =================
+
 
 
       GoRoute(
 
         path: RouteConstants.home,
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const HomeScreen(),
 
       ),
-
 
 
 
@@ -152,7 +178,7 @@ GoRoute(
 
         path: RouteConstants.customerHome,
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const CustomerHomeScreen(),
 
       ),
@@ -167,17 +193,20 @@ GoRoute(
 
       GoRoute(
 
-        path: '/customer/professions',
+        path:'/customer/professions',
 
-        builder: (context, state) {
+        builder:(context,state){
 
 
           final categoryId =
               state.extra as String? ?? '';
 
 
+
           return CategorySelectionScreen(
+
             categoryId: categoryId,
+
           );
 
 
@@ -188,11 +217,12 @@ GoRoute(
 
 
 
+
       GoRoute(
 
-        path: '/customer/request-description',
+        path:'/customer/request-description',
 
-        builder: (context, state) {
+        builder:(context,state){
 
 
           final args =
@@ -209,6 +239,7 @@ GoRoute(
             professionId:
             args['professionId'] ?? '',
 
+
           );
 
 
@@ -219,12 +250,11 @@ GoRoute(
 
 
 
-
       GoRoute(
 
-        path: '/customer/my-requests',
+        path:'/customer/my-requests',
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const MyRequestsScreen(),
 
       ),
@@ -232,12 +262,11 @@ GoRoute(
 
 
 
-
       GoRoute(
 
-        path: '/customer/request-details',
+        path:'/customer/request-details',
 
-        builder: (context, state) {
+        builder:(context,state){
 
 
           final requestId =
@@ -259,12 +288,11 @@ GoRoute(
 
 
 
-
       GoRoute(
 
-        path: '/customer/favorites',
+        path:'/customer/favorites',
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const FavoritesScreen(),
 
       ),
@@ -272,12 +300,11 @@ GoRoute(
 
 
 
-
       GoRoute(
 
-        path: '/customer/profile',
+        path:'/customer/profile',
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const CustomerProfileScreen(),
 
       ),
@@ -292,9 +319,9 @@ GoRoute(
 
       GoRoute(
 
-        path: '/search',
+        path:'/search',
 
-        builder: (context, state) {
+        builder:(context,state){
 
 
           final query =
@@ -317,6 +344,44 @@ GoRoute(
 
 
 
+      // ================= PROFESSIONAL PREVIEW =================
+
+
+
+      GoRoute(
+
+        path:'/professional-preview',
+
+        builder:(context,state){
+
+
+          final data =
+              state.extra as Map<String,String>? ?? {};
+
+
+
+          return ProfessionalPreviewScreen(
+
+            name:
+            data['name'] ?? '',
+
+
+            profession:
+            data['profession'] ?? '',
+
+
+          );
+
+
+        },
+
+      ),
+
+
+
+
+
+
       // ================= PROFESSIONAL =================
 
 
@@ -325,7 +390,7 @@ GoRoute(
 
         path: RouteConstants.professionalHome,
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const ProfessionalDashboard(),
 
       ),
@@ -336,9 +401,9 @@ GoRoute(
 
       GoRoute(
 
-        path: '/professional/pending-requests',
+        path:'/professional/pending-requests',
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const PendingRequestsScreen(),
 
       ),
@@ -346,15 +411,72 @@ GoRoute(
 
 
 
+
       GoRoute(
 
-        path: '/professional/my-jobs',
+        path:'/professional/my-jobs',
 
-        builder: (context, state) =>
+        builder:(context,state)=>
             const JobManagementScreen(),
 
       ),
 
+
+
+
+
+      // ================= CHAT =================
+
+
+
+      GoRoute(
+
+        path:'/chat',
+
+        builder:(context,state){
+
+
+          final name =
+              state.extra as String? ??
+              'Professional';
+
+
+
+          return ChatScreen(
+
+            userName: name,
+
+          );
+
+
+        },
+
+      ),
+    
+     // ================= BOOKING =================
+
+GoRoute(
+
+  path: '/booking',
+
+  builder: (context, state) {
+
+    final data =
+        state.extra as Map<String, String>? ?? {};
+
+    return BookingScreen(
+
+      professionalName:
+          data['name'] ?? 'Professional',
+
+      profession:
+          data['profession'] ?? 'Service',
+
+    );
+
+  },
+
+),
 
 
     ],
@@ -362,31 +484,34 @@ GoRoute(
 
 
 
-
     // ================= ERROR =================
 
 
-    errorBuilder: (context, state) {
+
+    errorBuilder:(context,state){
 
 
       return Scaffold(
 
-        body: Center(
 
-          child: Column(
+        body:Center(
+
+
+          child:Column(
+
 
             mainAxisAlignment:
             MainAxisAlignment.center,
 
 
-            children: [
+            children:[
 
 
               const Icon(
 
                 Icons.error_outline,
 
-                color: Colors.red,
+                color:Colors.red,
 
                 size:64,
 
@@ -395,6 +520,7 @@ GoRoute(
 
 
               const SizedBox(height:20),
+
 
 
 
@@ -414,16 +540,23 @@ GoRoute(
 
               ElevatedButton(
 
-                onPressed: () {
+
+                onPressed:(){
+
 
                   context.go('/guest');
 
+
                 },
+
 
                 child:
                 const Text(
+
                   'Go Home',
+
                 ),
+
 
               ),
 
@@ -431,9 +564,12 @@ GoRoute(
 
             ],
 
+
           ),
 
+
         ),
+
 
       );
 

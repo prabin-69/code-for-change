@@ -128,61 +128,67 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
 
 
-        bottomNavigationBar: BottomNavigationBar(
+bottomNavigationBar: BottomNavigationBar(
+  currentIndex: 0,
+  type: BottomNavigationBarType.fixed,
 
-          currentIndex:0,
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
 
+    BottomNavigationBarItem(
+      icon: Icon(Icons.search),
+      label: 'Search',
+    ),
 
-          items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.calendar_month),
+      label: 'Booking',
+    ),
 
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label:'Home',
-            ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.chat),
+      label: 'Chat',
+    ),
 
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person),
+      label: 'Profile',
+    ),
+  ],
 
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt),
-              label:'My Requests',
-            ),
+  onTap: (index) {
 
+    switch (index) {
 
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label:'Profile',
-            ),
+      case 0:
+        break;
 
-          ],
+      case 1:
+        break;
 
+      case 2:
+        context.push('/customer/my-requests');
+        break;
 
-          onTap:(index){
+      case 3:
+        context.push(
+          '/chat',
+          extra: 'Customer Support',
+        );
+        break;
 
-            if(index == 1){
+      case 4:
+        context.push('/customer/profile');
+        break;
+    }
 
-              context.push(
-                '/customer/my-requests',
-              );
-
-            }
-
-
-            if(index == 2){
-
-              context.push(
-                '/customer/profile',
-              );
-
-            }
-
-
-          },
-
-        ),
-
+      },
       ),
-
+   ),
     );
-
   }
 
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../bloc/payment_bloc.dart';
 
 class BankPaymentInstructionsScreen extends StatelessWidget {
   final String paymentId;
@@ -42,8 +41,8 @@ class BankPaymentInstructionsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             if (instructions.containsKey('qrCodeUrl'))
               Center(
-                child: QrImage(
-                  data: instructions['qrCodeUrl'],
+                child: QrImageView(
+                  data: "WorldLink Payment",
                   size: 200,
                 ),
               ),

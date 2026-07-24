@@ -25,10 +25,7 @@ class LocationService {
 
   static Future<Position> getCurrentPosition() async {
     return await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 10, // meters
-      ),
+      desiredAccuracy: LocationAccuracy.high,
     );
   }
 
