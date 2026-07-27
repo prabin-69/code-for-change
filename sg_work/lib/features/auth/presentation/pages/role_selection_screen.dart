@@ -28,18 +28,23 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is Authenticated) {
-            context.go(RouteConstants.home);
-          } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
+      listener: (context, state) {
+      if (state is Authenticated) {
+      if (_selectedRole == "CUSTOMER") {
+      context.go(RouteConstants.customerHome);
+    } else if (_selectedRole == "PROFESSIONAL") {
+      context.go('/professional/setup');
+    }
+  } else if (state is AuthFailure) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(state.message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+},
+       
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),

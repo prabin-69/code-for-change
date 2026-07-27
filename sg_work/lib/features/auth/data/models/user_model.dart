@@ -33,7 +33,7 @@ class UserModel {
       // Defaults to true only if the field is missing entirely (e.g. a
       // cached user blob saved before this field existed) so we never
       // regress an already-authenticated user back into role selection.
-      roleSelected: json['role_selected'] as bool? ?? true,
+      roleSelected: json['role_selected'] as bool? ?? false,
     );
   }
 

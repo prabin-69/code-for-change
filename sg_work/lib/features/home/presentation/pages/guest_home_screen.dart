@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 class GuestHomeScreen extends StatefulWidget {
   const GuestHomeScreen({super.key});
 
@@ -259,7 +258,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
             child: ElevatedButton(
             onPressed:(){
               Navigator.pop(context);
-              context.push('/phone-login');
+              context.push('/login');
             },
             child: const Text("Login"),
           ),

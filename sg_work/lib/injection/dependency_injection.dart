@@ -32,7 +32,7 @@ import '../features/customer/domain/usecases/remove_favorite.dart';
 import '../features/customer/presentation/bloc/customer_bloc.dart';
 
 // Professional
-import '../features/professional/data/datasources/professional_remote_datasource.dart';
+import '../features/professional/data/datasources/professional_remote_data_source.dart';
 import '../features/professional/domain/repositories/professional_repository.dart';
 import '../features/professional/domain/repositories/professional_repository_impl.dart';
 import '../features/professional/domain/usecases/get_profile.dart';

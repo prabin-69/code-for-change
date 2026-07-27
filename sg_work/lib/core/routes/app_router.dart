@@ -3,15 +3,12 @@ import 'package:go_router/go_router.dart';
 
 import '../constants/route_constants.dart';
 
+
+// AUTH
 import '../../features/auth/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/phone_login_screen.dart';
 import '../../features/auth/presentation/pages/otp_verification_screen.dart';
 import '../../features/auth/presentation/pages/role_selection_screen.dart';
-
-import '../../features/home/presentation/pages/home_screen.dart';
-import '../../features/home/presentation/pages/guest_home_screen.dart';
-import '../../features/settings/presentation/pages/settings_screen.dart';
-
 import '../../features/auth/presentation/pages/category_selection_screen.dart';
 import '../../features/auth/presentation/pages/request_description_screen.dart';
 import '../../features/auth/presentation/pages/my_requests_screen.dart';
@@ -19,18 +16,39 @@ import '../../features/auth/presentation/pages/request_details_screen.dart';
 import '../../features/auth/presentation/pages/favorites_screen.dart';
 import '../../features/auth/presentation/pages/customer_profil_screen.dart';
 
-import '../../features/customer/presentation/pages/customer_home_screen.dart';
 
+// HOME
+import '../../features/home/presentation/pages/home_screen.dart';
+import '../../features/home/presentation/pages/guest_home_screen.dart';
+
+
+// SETTINGS
+import '../../features/settings/presentation/pages/settings_screen.dart';
+
+
+// CUSTOMER
+import '../../features/customer/presentation/pages/customer_home_screen.dart';
+import '../../features/customer/presentation/pages/booking_screen.dart';
+
+
+// SEARCH
+import '../../features/search/presentation/pages/search_result_screen.dart';
+import '../../features/search/presentation/pages/professional_preview_screen.dart';
 import '../../features/search/professional_dashboard.dart';
 import '../../features/search/pending_requests_screen.dart';
 import '../../features/search/job_management_screen.dart';
-import '../../features/search/presentation/pages/search_result_screen.dart';
-import '../../features/search/presentation/pages/professional_preview_screen.dart';
 
+
+// PROFESSIONAL
+import '../../features/professional/presentation/pages/professional_home_screen.dart';
+import '../../features/professional/presentation/pages/professional_requests_screen.dart';
+import '../../features/professional/presentation/pages/professional_profile_screen.dart';
+import '../../features/professional/presentation/pages/professional_profile_setup_screen.dart';
+import '../../features/professional/presentation/pages/professional_edit_profile_screen.dart';
 
 // CHAT
 import '../../features/chat/presentation/pages/chat_screen.dart';
-import '../../features/customer/presentation/pages/booking_screen.dart';
+
 
 
 class AppRouter {
@@ -43,7 +61,6 @@ class AppRouter {
 
   static final router = GoRouter(
 
-
     navigatorKey: _rootNavigatorKey,
 
 
@@ -51,7 +68,7 @@ class AppRouter {
 
 
 
-    redirect: (context, state) {
+    redirect: (context,state){
 
       return null;
 
@@ -68,10 +85,10 @@ class AppRouter {
 
       GoRoute(
 
-        path: '/guest',
+        path:'/guest',
 
-        builder: (context,state) =>
-            const GuestHomeScreen(),
+        builder:(context,state)=>
+        const GuestHomeScreen(),
 
       ),
 
@@ -86,10 +103,9 @@ class AppRouter {
         path:'/settings',
 
         builder:(context,state)=>
-            const SettingsScreen(),
+        const SettingsScreen(),
 
       ),
-
 
 
 
@@ -97,13 +113,12 @@ class AppRouter {
       // ================= AUTH =================
 
 
-
       GoRoute(
 
-        path: RouteConstants.splash,
+        path:RouteConstants.splash,
 
         builder:(context,state)=>
-            const SplashScreen(),
+        const SplashScreen(),
 
       ),
 
@@ -111,10 +126,10 @@ class AppRouter {
 
       GoRoute(
 
-        path: RouteConstants.phoneLogin,
+        path:RouteConstants.phoneLogin,
 
         builder:(context,state)=>
-            const PhoneLoginScreen(),
+        const PhoneLoginScreen(),
 
       ),
 
@@ -122,15 +137,12 @@ class AppRouter {
 
       GoRoute(
 
-        path: RouteConstants.otpVerification,
+        path:RouteConstants.otpVerification,
 
         builder:(context,state){
 
-
           final phone =
               state.extra as String? ?? '';
-
-
 
           return OtpVerificationScreen(
 
@@ -138,20 +150,18 @@ class AppRouter {
 
           );
 
-
         },
 
       ),
 
 
 
-
       GoRoute(
 
-        path: RouteConstants.roleSelection,
+        path:RouteConstants.roleSelection,
 
         builder:(context,state)=>
-            const RoleSelectionScreen(),
+        const RoleSelectionScreen(),
 
       ),
 
@@ -162,13 +172,12 @@ class AppRouter {
       // ================= HOME =================
 
 
-
       GoRoute(
 
-        path: RouteConstants.home,
+        path:RouteConstants.home,
 
         builder:(context,state)=>
-            const HomeScreen(),
+        const HomeScreen(),
 
       ),
 
@@ -176,10 +185,10 @@ class AppRouter {
 
       GoRoute(
 
-        path: RouteConstants.customerHome,
+        path:RouteConstants.customerHome,
 
         builder:(context,state)=>
-            const CustomerHomeScreen(),
+        const CustomerHomeScreen(),
 
       ),
 
@@ -197,11 +206,8 @@ class AppRouter {
 
         builder:(context,state){
 
-
           final categoryId =
               state.extra as String? ?? '';
-
-
 
           return CategorySelectionScreen(
 
@@ -209,11 +215,9 @@ class AppRouter {
 
           );
 
-
         },
 
       ),
-
 
 
 
@@ -224,10 +228,8 @@ class AppRouter {
 
         builder:(context,state){
 
-
           final args =
               state.extra as Map<String,String>? ?? {};
-
 
 
           return RequestDescriptionScreen(
@@ -239,9 +241,7 @@ class AppRouter {
             professionId:
             args['professionId'] ?? '',
 
-
           );
-
 
         },
 
@@ -255,7 +255,7 @@ class AppRouter {
         path:'/customer/my-requests',
 
         builder:(context,state)=>
-            const MyRequestsScreen(),
+        const MyRequestsScreen(),
 
       ),
 
@@ -268,10 +268,8 @@ class AppRouter {
 
         builder:(context,state){
 
-
           final requestId =
               state.extra as String? ?? '';
-
 
 
           return RequestDetailsScreen(
@@ -279,7 +277,6 @@ class AppRouter {
             requestId: requestId,
 
           );
-
 
         },
 
@@ -293,7 +290,7 @@ class AppRouter {
         path:'/customer/favorites',
 
         builder:(context,state)=>
-            const FavoritesScreen(),
+        const FavoritesScreen(),
 
       ),
 
@@ -305,7 +302,7 @@ class AppRouter {
         path:'/customer/profile',
 
         builder:(context,state)=>
-            const CustomerProfileScreen(),
+        const CustomerProfileScreen(),
 
       ),
 
@@ -323,10 +320,8 @@ class AppRouter {
 
         builder:(context,state){
 
-
           final query =
               state.extra as String? ?? '';
-
 
 
           return SearchResultScreen(
@@ -334,7 +329,6 @@ class AppRouter {
             query: query,
 
           );
-
 
         },
 
@@ -344,34 +338,23 @@ class AppRouter {
 
 
 
-      // ================= PROFESSIONAL PREVIEW =================
-
-
-
       GoRoute(
 
         path:'/professional-preview',
 
         builder:(context,state){
 
-
           final data =
               state.extra as Map<String,String>? ?? {};
 
 
-
           return ProfessionalPreviewScreen(
 
-            name:
-            data['name'] ?? '',
+            name:data['name'] ?? '',
 
-
-            profession:
-            data['profession'] ?? '',
-
+            profession:data['profession'] ?? '',
 
           );
-
 
         },
 
@@ -387,14 +370,44 @@ class AppRouter {
 
 
       GoRoute(
+        path:'/professional/dashboard',
+        builder:(context,state)=>
+        const ProfessionalHomeScreen(),
+      ),
 
-        path: RouteConstants.professionalHome,
+      GoRoute(
+
+        path:'/professional/requests',
 
         builder:(context,state)=>
-            const ProfessionalDashboard(),
+        const ProfessionalRequestsScreen(),
 
       ),
 
+      GoRoute(
+      path:'/professional/profile',
+      builder:(context,state)=>
+      const ProfessionalProfileScreen(),
+    ),
+
+      GoRoute(
+      path:'/professional/setup',
+      builder:(context,state)=>
+      const ProfessionalProfileSetupScreen(),
+    ),
+
+
+
+
+
+      GoRoute(
+
+        path:RouteConstants.professionalHome,
+
+        builder:(context,state)=>
+        const ProfessionalDashboard(),
+
+      ),
 
 
 
@@ -404,10 +417,9 @@ class AppRouter {
         path:'/professional/pending-requests',
 
         builder:(context,state)=>
-            const PendingRequestsScreen(),
+        const PendingRequestsScreen(),
 
       ),
-
 
 
 
@@ -417,9 +429,18 @@ class AppRouter {
         path:'/professional/my-jobs',
 
         builder:(context,state)=>
-            const JobManagementScreen(),
+        const JobManagementScreen(),
 
       ),
+
+      GoRoute(
+
+      path:'/professional/edit-profile',
+
+     builder:(context,state)=>
+     const ProfessionalEditProfileScreen(),
+
+),
 
 
 
@@ -435,48 +456,55 @@ class AppRouter {
 
         builder:(context,state){
 
-
           final name =
               state.extra as String? ??
               'Professional';
 
 
-
           return ChatScreen(
 
-            userName: name,
+            userName:name,
 
           );
-
 
         },
 
       ),
-    
-     // ================= BOOKING =================
 
-GoRoute(
 
-  path: '/booking',
 
-  builder: (context, state) {
 
-    final data =
-        state.extra as Map<String, String>? ?? {};
 
-    return BookingScreen(
 
-      professionalName:
-          data['name'] ?? 'Professional',
+      // ================= BOOKING =================
 
-      profession:
-          data['profession'] ?? 'Service',
 
-    );
 
-  },
+      GoRoute(
 
-),
+        path:'/booking',
+
+        builder:(context,state){
+
+
+          final data =
+              state.extra as Map<String,String>? ?? {};
+
+
+          return BookingScreen(
+
+            professionalName:
+            data['name'] ?? 'Professional',
+
+
+            profession:
+            data['profession'] ?? 'Service',
+
+          );
+
+        },
+
+      ),
 
 
     ],
@@ -484,8 +512,8 @@ GoRoute(
 
 
 
-    // ================= ERROR =================
 
+    // ================= ERROR =================
 
 
     errorBuilder:(context,state){
@@ -493,12 +521,9 @@ GoRoute(
 
       return Scaffold(
 
-
         body:Center(
 
-
           child:Column(
-
 
             mainAxisAlignment:
             MainAxisAlignment.center,
@@ -523,7 +548,6 @@ GoRoute(
 
 
 
-
               Text(
 
                 'Page not found: ${state.matchedLocation}',
@@ -532,52 +556,36 @@ GoRoute(
 
 
 
-
               const SizedBox(height:20),
-
 
 
 
               ElevatedButton(
 
-
                 onPressed:(){
 
-
                   context.go('/guest');
-
 
                 },
 
 
                 child:
                 const Text(
-
                   'Go Home',
-
                 ),
-
 
               ),
 
-
-
             ],
-
 
           ),
 
-
         ),
-
 
       );
 
-
     },
 
-
   );
-
 
 }

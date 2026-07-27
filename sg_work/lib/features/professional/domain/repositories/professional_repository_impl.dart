@@ -6,7 +6,7 @@ import '../entities/certificate.dart';
 import '../entities/portfolio.dart';
 import '../repositories/professional_repository.dart';
 import '../../../customer/domain/entities/job.dart';
-import '../../data/datasources/professional_remote_datasource.dart';
+import '../../data/datasources/professional_remote_data_source.dart';
 
 class ProfessionalRepositoryImpl implements ProfessionalRepository {
   final ProfessionalRemoteDataSource remoteDataSource;

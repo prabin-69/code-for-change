@@ -20,9 +20,11 @@ class ProfessionalProfile extends Equatable {
   final DateTime updatedAt;
   final dynamic category;
   final dynamic profession;
+  final dynamic user;
 
   const ProfessionalProfile({
     required this.userId,
+    this.user,
     this.categoryId,
     this.professionId,
     required this.skills,

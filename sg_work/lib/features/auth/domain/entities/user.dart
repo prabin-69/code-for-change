@@ -18,7 +18,7 @@ class User extends Equatable {
     this.photoUrl,
     required this.role,
     required this.isActive,
-    this.roleSelected = true,
+    this.roleSelected = false,
   });
 
   String get fullName => '$firstName $lastName'.trim();

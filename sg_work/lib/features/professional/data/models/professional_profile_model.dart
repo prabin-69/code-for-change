@@ -20,9 +20,11 @@ class ProfessionalProfileModel {
   final DateTime updatedAt;
   final dynamic category;
   final dynamic profession;
+  final dynamic user;
 
   ProfessionalProfileModel({
     required this.userId,
+    this.user,
     this.categoryId,
     this.professionId,
     required this.skills,
@@ -45,6 +47,7 @@ class ProfessionalProfileModel {
 
   factory ProfessionalProfileModel.fromJson(Map<String, dynamic> json) {
     return ProfessionalProfileModel(
+      user: json['user'],
       userId: json['user_id'] as String? ?? '',
       categoryId: json['category_id'] as String?,
       professionId: json['profession_id'] as String?,
@@ -94,6 +97,7 @@ class ProfessionalProfileModel {
       };
 
   ProfessionalProfile toEntity() => ProfessionalProfile(
+        user: user,
         userId: userId,
         categoryId: categoryId,
         professionId: professionId,
