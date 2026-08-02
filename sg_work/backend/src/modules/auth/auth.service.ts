@@ -248,18 +248,10 @@ async selectRole(
     );
   }
 
-  if (user.role_selected) {
-    throw new AppError(
-      'Role already selected',
-      400
-    );
-  }
-
-  const updatedUser =
-    await this.repository.updateUserRole(
-      userId,
-      role
-    );
+  // The role-selection screen is the source of truth for this action.  Do
+  // not reject a user simply because an earlier attempt already set this
+  // flag; update the selected role and return fresh credentials instead.
+  const updatedUser = await this.repository.updateUserRole(userId, role);
 
   const accessToken =
     TokenService.generateAccessToken({

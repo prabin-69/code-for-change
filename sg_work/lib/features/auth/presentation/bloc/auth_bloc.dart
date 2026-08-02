@@ -21,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final Logout logout;
   final LogoutAll logoutAll;
   final GetCurrentUser getCurrentUser;
+  bool _isSelectingRole = false;
 
   AuthBloc({
     required this.sendOtp,
@@ -82,12 +83,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onSelectRole(
       SelectRoleEvent event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-    final result = await selectRole(event.role);
-    result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
-      (user) => _emitPostAuthState(user, emit),
-    );
+    // Bloc processes events concurrently by default. Ignore any repeated tap
+    // while the first role-selection request is still in flight.
+    if (_isSelectingRole) return;
+
+    _isSelectingRole = true;
+    try {
+      emit(AuthLoading());
+      final result = await selectRole(event.role);
+      result.fold(
+        (failure) => emit(AuthFailure(failure.message)),
+        (user) => _emitPostAuthState(user, emit),
+      );
+    } finally {
+      _isSelectingRole = false;
+    }
   }
 
   Future<void> _onRefreshToken(

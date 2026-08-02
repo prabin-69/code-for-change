@@ -20,6 +20,7 @@ class RoleSelectionScreen extends StatefulWidget {
 class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     with SingleTickerProviderStateMixin {
   String? _selectedRole;
+  bool _isSubmitting = false;
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
 
@@ -45,7 +46,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
   void _submit() {
     final role = _selectedRole;
-    if (role == null) return;
+    if (role == null || _isSubmitting) return;
+    setState(() => _isSubmitting = true);
     context.read<AuthBloc>().add(SelectRoleEvent(role));
   }
 
@@ -64,6 +66,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                 context.go('/professional/setup');
               }
             } else if (state is AuthFailure) {
+              setState(() => _isSubmitting = false);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
@@ -190,7 +193,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         // ─── Continue Button ───
                         BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
-                            final isLoading = state is AuthLoading;
+                            final isLoading = state is AuthLoading || _isSubmitting;
                             return GradientButton(
                               label: 'Continue',
                               icon: Icons.arrow_forward_ios,
