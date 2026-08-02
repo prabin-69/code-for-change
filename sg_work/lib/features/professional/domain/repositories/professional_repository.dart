@@ -28,6 +28,7 @@ abstract class ProfessionalRepository {
   // Jobs & Requests
   Future<Either<Failure, List<Map<String, dynamic>>>> getPendingRequests({required double lat, required double lng, double radius = 10});
   Future<Either<Failure, Job>> acceptRequest(String requestId);
+  Future<Either<Failure, void>> rejectRequest(String requestId);
   Future<Either<Failure, List<Job>>> getMyJobs({String? status});
   Future<Either<Failure, Job>> getJobDetails(String jobId);
   Future<Either<Failure, Job>> updateJobStatus(String jobId, Map<String, dynamic> data);

@@ -8,6 +8,13 @@ export const createRequestSchema = z.object({
     latitude: z.number().min(-90).max(90),
     longitude: z.number().min(-180).max(180),
     address: z.string().optional(),
+    // Direct booking: when a customer selects a specific professional
+    professional_id: z.string().uuid().optional(),
+    // New booking fields (all optional for backward compatibility)
+    budget: z.number().positive().optional(),
+    preferred_date: z.string().optional(),
+    preferred_time: z.string().optional(),
+    images: z.array(z.string()).optional(),
   }),
 });
 

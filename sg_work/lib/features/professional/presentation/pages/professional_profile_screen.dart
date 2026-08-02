@@ -37,7 +37,13 @@ class _ProfessionalProfileScreenState
   }
 
   Future<void> loadProfile() async {
+    try{
     await controller.loadProfile();
+    print(controller.profile?.user);
+    print(controller.profile?.profession);
+    } catch (e){
+      print("ERROR:$e");
+    }
 
     if (mounted) {
       setState(() {
@@ -56,6 +62,7 @@ class _ProfessionalProfileScreenState
         ),
       );
     }
+    
 
     if (controller.error != null) {
       return Scaffold(
@@ -67,20 +74,15 @@ class _ProfessionalProfileScreenState
         ),
       );
     }
-
     final profile = controller.profile!;
-
     return Scaffold(
-
       appBar: AppBar(
-
         title: const Text(
           "My Profile",
           style: TextStyle(
             fontWeight: FontWeight.bold,
           ),
         ),
-
         actions: [
 
           IconButton(
@@ -133,8 +135,7 @@ class _ProfessionalProfileScreenState
               const SizedBox(height: 6),
 
               Text(
-                profile.profession?["name"] ??
-                    "Professional",
+                profile.profession?["name"] ??"",
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,

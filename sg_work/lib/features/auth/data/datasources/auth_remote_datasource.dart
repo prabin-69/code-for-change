@@ -55,6 +55,13 @@ class AuthRemoteDataSource {
       ApiConstants.selectRole,
       data: {'role': role},
     );
-    return response.data['data'] as Map<String, dynamic>;
+    final data = response.data['data'] as Map<String, dynamic>;
+    // Backend returns: { user: {...}, access_token: "...", refresh_token: "..." }
+    // Extract the structured data so the repository can correctly parse user + tokens.
+    return {
+      'user': data['user'] as Map<String, dynamic>,
+      'access_token': data['access_token'] as String,
+      'refresh_token': data['refresh_token'] as String,
+    };
   }
 }

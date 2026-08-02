@@ -17,6 +17,8 @@ export class SearchRepository {
     const result = await prisma.$queryRaw<any[]>`
       SELECT
         pp.user_id,
+        pp.category_id,
+        pp.profession_id,
         pp.bio,
         pp.skills,
         pp.experience_years,

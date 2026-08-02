@@ -148,6 +148,16 @@ class ProfessionalRepositoryImpl implements ProfessionalRepository {
   }
 
   @override
+  Future<Either<Failure, void>> rejectRequest(String requestId) async {
+    try {
+      await remoteDataSource.rejectRequest(requestId);
+      return const Right(null);
+    } catch (e) {
+      return Left(ErrorHandler.handle(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Job>>> getMyJobs({String? status}) async {
     try {
       final models = await remoteDataSource.getMyJobs(status: status);

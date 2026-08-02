@@ -1,19 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/secure_storage_helper.dart';
 import '../../../core/constants/api_constants.dart';
 
 class AuthInterceptor extends Interceptor {
-  final FlutterSecureStorage secureStorage;
-
-  AuthInterceptor({required this.secureStorage});
+  AuthInterceptor();
 
   @override
   void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
-    final accessToken =
-        await secureStorage.read(key: AppConstants.accessTokenKey);
-    if (accessToken != null) {
+      RequestOptions options, RequestInterceptorHandler handler) {
+    // Use synchronous cache first to avoid race condition with async read.
+    final accessToken = SecureStorageHelper.getAccessToken();
+    if (accessToken != null && accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $accessToken';
     }
     handler.next(options);
@@ -23,8 +20,7 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
       try {
-        final refreshToken =
-            await secureStorage.read(key: AppConstants.refreshTokenKey);
+        final refreshToken = await SecureStorageHelper.getRefreshToken();
         if (refreshToken != null) {
           final dio = Dio(BaseOptions(baseUrl: ApiConstants.baseUrl));
           final response = await dio.post(
@@ -36,10 +32,8 @@ class AuthInterceptor extends Interceptor {
                 response.data['data']['access_token'] as String;
             final newRefreshToken =
                 response.data['data']['refresh_token'] as String;
-            await secureStorage.write(
-                key: AppConstants.accessTokenKey, value: newAccessToken);
-            await secureStorage.write(
-                key: AppConstants.refreshTokenKey, value: newRefreshToken);
+            await SecureStorageHelper.saveAccessToken(newAccessToken);
+            await SecureStorageHelper.saveRefreshToken(newRefreshToken);
 
             // Retry original request
             final request = err.requestOptions;
@@ -58,15 +52,9 @@ class AuthInterceptor extends Interceptor {
           }
         }
       } catch (_) {
-        await _clearTokens();
+        await SecureStorageHelper.clearAll();
       }
     }
     handler.next(err);
-  }
-
-  Future<void> _clearTokens() async {
-    await secureStorage.delete(key: AppConstants.accessTokenKey);
-    await secureStorage.delete(key: AppConstants.refreshTokenKey);
-    await secureStorage.delete(key: AppConstants.userKey);
   }
 }

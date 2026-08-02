@@ -235,6 +235,10 @@ model ServiceRequest {
   // PostGIS geometry – stored as raw bytes; spatial queries use $queryRaw with ST_ functions
   location            Bytes?
   address             String?
+  budget              Decimal?   @db.Decimal(10, 2)
+  preferred_date      DateTime?
+  preferred_time      String?
+  images              String[]
   status              String     @default("pending") // pending, accepted, on_the_way, in_progress, completed, cancelled
   accepted_by         String?    // professional user id
   scheduled_time      DateTime?

@@ -23,7 +23,7 @@ class QuickActionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(.15),
+              color: Colors.grey.withValues(alpha: .15),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -34,7 +34,7 @@ class QuickActionCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.blue.withOpacity(.1),
+              backgroundColor: Colors.blue.withValues(alpha: .1),
               child: Icon(
                 icon,
                 color: Colors.blue,

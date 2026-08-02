@@ -1,7 +1,38 @@
 import prisma from '../../config/database';
-import { ServiceRequest, Job, Favorite, Review } from '@prisma/client';
+import { ServiceRequest, Job, Favorite, Review, RequestOffer } from '@prisma/client';
 
 export class CustomersRepository {
+  // --- Offers ---
+  async createDirectOffer(data: {
+    request_id: string;
+    professional_id: string;
+  }): Promise<RequestOffer> {
+    return prisma.requestOffer.create({
+      data: {
+        request_id: data.request_id,
+        professional_id: data.professional_id,
+        response: 'none',
+        sent_at: new Date(),
+      },
+    });
+  }
+
+  async findOffersByProfessional(professionalId: string): Promise<RequestOffer[]> {
+    return prisma.requestOffer.findMany({
+      where: { professional_id: professionalId, response: 'none' },
+      include: {
+        request: {
+          include: {
+            customer: true,
+            category: true,
+            profession: true,
+          },
+        },
+      },
+      orderBy: { sent_at: 'desc' },
+    });
+  }
+
   // --- Service Requests ---
   async createRequest(data: {
     customer_id: string;
@@ -10,6 +41,10 @@ export class CustomersRepository {
     description: string;
     location?: any; // GeoJSON
     address?: string;
+    budget?: number;
+    preferred_date?: Date;
+    preferred_time?: string;
+    images?: string[];
   }): Promise<ServiceRequest> {
     return prisma.serviceRequest.create({
       data: {
@@ -20,6 +55,10 @@ export class CustomersRepository {
         location: data.location,
         address: data.address,
         status: 'pending',
+        budget: data.budget,
+        preferred_date: data.preferred_date,
+        preferred_time: data.preferred_time,
+        images: data.images ?? [],
       },
     });
   }

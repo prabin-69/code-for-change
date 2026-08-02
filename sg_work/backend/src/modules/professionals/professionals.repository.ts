@@ -1,5 +1,5 @@
 import prisma from '../../config/database';
-import { ProfessionalProfile, Certificate, Portfolio, Job, VerificationRequest } from '@prisma/client';
+import { ProfessionalProfile, Certificate, Portfolio, Job, VerificationRequest, RequestOffer } from '@prisma/client';
 
 export class ProfessionalsRepository {
   // --- Professional Profile ---
@@ -139,18 +139,52 @@ export class ProfessionalsRepository {
   }
 
   async getPendingRequestsNearby(lat: number, lng: number, radiusKm: number, professionalId: string): Promise<any[]> {
-    // Use raw SQL for PostGIS distance query
-    const result = await prisma.$queryRaw`
-      SELECT r.*, 
-             ST_Distance(r.location, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)) as distance
+    // Use raw SQL to find nearby request IDs
+    const result: any[] = await prisma.$queryRaw`
+      SELECT r.id
       FROM "ServiceRequest" r
       WHERE r.status = 'pending'
         AND ST_DWithin(r.location, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326), ${radiusKm * 1000})
         AND r.accepted_by IS NULL
         AND r.customer_id != ${professionalId}
-      ORDER BY distance ASC
+      ORDER BY ST_Distance(r.location, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)) ASC
     `;
-    return result as any[];
+
+    if (!result || result.length === 0) return [];
+
+    const ids = result.map((r: any) => r.id);
+
+    // Fetch full request objects with includes using Prisma
+    return prisma.serviceRequest.findMany({
+      where: { id: { in: ids } },
+      include: {
+        customer: { select: { id: true, first_name: true, last_name: true, photo_url: true, phone_number: true } },
+        category: true,
+        profession: true,
+        job: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+  }
+
+  // --- Direct Offers (from customer booking a specific professional) ---
+  async getDirectOffers(professionalId: string): Promise<RequestOffer[]> {
+    return prisma.requestOffer.findMany({
+      where: {
+        professional_id: professionalId,
+        response: 'none',
+      },
+      include: {
+        request: {
+          include: {
+            customer: { select: { id: true, first_name: true, last_name: true, photo_url: true, phone_number: true } },
+            category: true,
+            profession: true,
+          },
+        },
+      },
+      orderBy: { sent_at: 'desc' },
+    });
   }
 
   // --- Performance ---

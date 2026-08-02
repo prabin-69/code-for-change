@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../constants/route_constants.dart';
 
@@ -17,9 +18,11 @@ import '../../features/auth/presentation/pages/favorites_screen.dart';
 import '../../features/auth/presentation/pages/customer_profil_screen.dart';
 
 
-// HOME
-import '../../features/home/presentation/pages/home_screen.dart';
-import '../../features/home/presentation/pages/guest_home_screen.dart';
+// HOME – Shared Home Screen replaces GuestHomeScreen, HomeScreen, and CustomerHomeScreen
+import '../../features/home/presentation/pages/shared_home_screen.dart';
+// Old home screens preserved for backward compatibility (not routed to directly)
+// import '../../features/home/presentation/pages/home_screen.dart';
+// import '../../features/home/presentation/pages/guest_home_screen.dart';
 
 
 // SETTINGS
@@ -27,7 +30,7 @@ import '../../features/settings/presentation/pages/settings_screen.dart';
 
 
 // CUSTOMER
-import '../../features/customer/presentation/pages/customer_home_screen.dart';
+// import '../../features/customer/presentation/pages/customer_home_screen.dart'; // Replaced by SharedHomeScreen
 import '../../features/customer/presentation/pages/booking_screen.dart';
 
 
@@ -45,9 +48,16 @@ import '../../features/professional/presentation/pages/professional_requests_scr
 import '../../features/professional/presentation/pages/professional_profile_screen.dart';
 import '../../features/professional/presentation/pages/professional_profile_setup_screen.dart';
 import '../../features/professional/presentation/pages/professional_edit_profile_screen.dart';
+import '../../features/professional/presentation/bloc/professional_bloc.dart';
 
 // CHAT
 import '../../features/chat/presentation/pages/chat_screen.dart';
+
+// AUTH BLOC
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+
+// GET_IT
+import 'package:get_it/get_it.dart';
 
 
 
@@ -64,14 +74,36 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
 
 
-    initialLocation: '/guest',
+    initialLocation: '/',
 
 
 
-    redirect: (context,state){
+    redirect: (context, state) {
+      // Try to read AuthBloc. If not available, let the route load.
+      final authBloc = context.read<AuthBloc>();
+      final authState = authBloc.state;
+
+      // ─── Old route redirects ───
+      final uri = state.uri.toString();
+      if (uri == '/guest' || uri == '/home' || uri == '/customer/home') {
+        return '/';
+      }
+
+      // ─── Auth-based redirects (only for the home route '/') ───
+      if (uri == '/') {
+        if (authState is AuthSuccess) {
+          final role = authState.user.role.toUpperCase();
+          if (role == 'PROFESSIONAL') {
+            return '/professional/dashboard';
+          }
+          // Customer stays on shared home – no redirect
+        } else if (authState is RoleSelectionRequired) {
+          return RouteConstants.roleSelection;
+        }
+        // Guest stays on shared home – no redirect
+      }
 
       return null;
-
     },
 
 
@@ -80,15 +112,15 @@ class AppRouter {
 
 
 
-      // ================= GUEST =================
+      // ================= SHARED HOME (Guest + Customer) =================
 
 
       GoRoute(
 
-        path:'/guest',
+        path: '/',
 
-        builder:(context,state)=>
-        const GuestHomeScreen(),
+        builder: (context, state) =>
+        const SharedHomeScreen(),
 
       ),
 
@@ -162,33 +194,6 @@ class AppRouter {
 
         builder:(context,state)=>
         const RoleSelectionScreen(),
-
-      ),
-
-
-
-
-
-      // ================= HOME =================
-
-
-      GoRoute(
-
-        path:RouteConstants.home,
-
-        builder:(context,state)=>
-        const HomeScreen(),
-
-      ),
-
-
-
-      GoRoute(
-
-        path:RouteConstants.customerHome,
-
-        builder:(context,state)=>
-        const CustomerHomeScreen(),
 
       ),
 
@@ -354,6 +359,12 @@ class AppRouter {
 
             profession:data['profession'] ?? '',
 
+            professionalId: data['id'],
+
+            categoryId: data['categoryId'],
+
+            professionId: data['professionId'],
+
           );
 
         },
@@ -371,17 +382,18 @@ class AppRouter {
 
       GoRoute(
         path:'/professional/dashboard',
-        builder:(context,state)=>
-        const ProfessionalHomeScreen(),
+        builder:(context,state)=> BlocProvider(
+          create: (_) => GetIt.I<ProfessionalBloc>(),
+          child: const ProfessionalHomeScreen(),
+        ),
       ),
 
       GoRoute(
-
         path:'/professional/requests',
-
-        builder:(context,state)=>
-        const ProfessionalRequestsScreen(),
-
+        builder:(context,state)=> BlocProvider(
+          create: (_) => GetIt.I<ProfessionalBloc>(),
+          child: const ProfessionalRequestsScreen(),
+        ),
       ),
 
       GoRoute(
@@ -500,9 +512,19 @@ class AppRouter {
             profession:
             data['profession'] ?? 'Service',
 
+            professionalId:
+            data['professionalId'],
+
+            categoryId:
+            data['categoryId'],
+
+            professionId:
+            data['professionId'],
+
           );
 
         },
+
 
       ),
 
@@ -564,7 +586,7 @@ class AppRouter {
 
                 onPressed:(){
 
-                  context.go('/guest');
+              context.go('/');
 
                 },
 

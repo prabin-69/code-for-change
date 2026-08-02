@@ -2,10 +2,50 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 // Side-effect import: ensures Socket augmentation (userId / userRole) is in scope
 import { ChatService } from './chat.service';
 import logger from '../../config/logger';
+import { eventBus } from '../../shared/events/event-bus';
 
 const chatService = new ChatService();
 
 export function setupSocketHandlers(io: SocketIOServer): void {
+  // ─── Booking Events (real-time notifications for direct bookings) ─────────
+  eventBus.on('booking:new_request', (data: {
+    requestId: string;
+    professionalId: string;
+    customerId: string;
+    categoryId: string;
+    professionId: string;
+    description: string;
+    address?: string;
+    budget?: number;
+    preferredDate?: string;
+    preferredTime?: string;
+  }) => {
+    // Emit directly to the specific professional's room
+    io.to(`user:${data.professionalId}`).emit('booking:new_request', data);
+    logger.info(`Booking request ${data.requestId} sent to professional ${data.professionalId}`);
+  });
+
+  eventBus.on('booking:accepted', (data: {
+    jobId: string;
+    requestId: string;
+    professionalId: string;
+    customerId: string;
+  }) => {
+    // Notify both customer and professional that booking was accepted
+    io.to(`user:${data.customerId}`).emit('booking:accepted', data);
+    io.to(`user:${data.professionalId}`).emit('booking:accepted', data);
+    logger.info(`Booking ${data.requestId} accepted. Job ${data.jobId} created.`);
+  });
+
+  eventBus.on('booking:rejected', (data: {
+    requestId: string;
+    professionalId: string;
+    customerId: string;
+  }) => {
+    // Notify the customer that the professional rejected the booking
+    io.to(`user:${data.customerId}`).emit('booking:rejected', data);
+    logger.info(`Booking ${data.requestId} rejected by professional ${data.professionalId}`);
+  });
   io.on('connection', (socket: Socket) => {
     // userId is set by the auth middleware in server.ts using the Socket augmentation
     const userId = socket.userId!;

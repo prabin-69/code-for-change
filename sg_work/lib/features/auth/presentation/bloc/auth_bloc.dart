@@ -54,6 +54,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   // Authenticated once a role has actually been chosen. Brand-new users (and
   // anyone whose role was reset by an admin) get routed to role selection
   // instead of falling through to Home/dashboard.
+  //
+  // NOTE: AuthSuccess is the single source of truth for the authenticated
+  // state – it carries the User and accessToken.  We do NOT emit a separate
+  // Authenticated() state because that would overwrite AuthSuccess and lose
+  // the user data, breaking downstream screens that check `is AuthSuccess`.
   void _emitPostAuthState(User user, Emitter<AuthState> emit) {
     if (!user.roleSelected) {
       emit(RoleSelectionRequired(user: user));
@@ -63,7 +68,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       user: user,
       accessToken: SecureStorageHelper.getAccessToken() ?? '',
     ));
-    emit(Authenticated());
   }
 
   Future<void> _onVerifyOtp(

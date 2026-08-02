@@ -70,6 +70,10 @@ import '../features/search/domain/repositories/search_repository.dart';
 import '../features/search/domain/usecases/search_professionals.dart';
 import '../features/search/presentation/bloc/search_bloc.dart';
 
+// Chat
+import '../features/chat/data/datasources/chat_remote_datasource.dart';
+import '../features/chat/presentation/bloc/chat_bloc.dart';
+
 final GetIt locator = GetIt.instance;
 
 Future<void> setupLocator() async {
@@ -256,4 +260,16 @@ locator.registerFactory<PaymentBloc>(
     getMyPayments: locator<GetMyPayments>(),
   ),
 );
+
+  // ================= CHAT =================
+
+  locator.registerLazySingleton<ChatRemoteDataSource>(
+    () => ChatRemoteDataSource(dio: locator<Dio>()),
+  );
+
+  locator.registerFactory<ChatBloc>(
+    () => ChatBloc(
+      remoteDataSource: locator<ChatRemoteDataSource>(),
+    ),
+  );
 }

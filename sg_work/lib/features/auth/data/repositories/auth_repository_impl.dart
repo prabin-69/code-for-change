@@ -38,8 +38,19 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> selectRole(String role) async {
     try {
-      final userJson = await remoteDataSource.selectRole(role);
+      final result = await remoteDataSource.selectRole(role);
+      // result contains: { user, access_token, refresh_token }
+      final userJson = result['user'] as Map<String, dynamic>;
+      final accessToken = result['access_token'] as String;
+      final refreshToken = result['refresh_token'] as String;
+
+      // Save the new tokens issued by the backend after role selection.
+      await SecureStorageHelper.saveAccessToken(accessToken);
+      await SecureStorageHelper.saveRefreshToken(refreshToken);
+
+      // Save the updated user (includes role_selected: true).
       await SecureStorageHelper.saveUser(userJson);
+
       final user = UserModel.fromJson(userJson).toEntity();
       return Right(user);
     } catch (e) {

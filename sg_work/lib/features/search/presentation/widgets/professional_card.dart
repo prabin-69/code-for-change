@@ -24,6 +24,9 @@ class ProfessionalCard extends StatelessWidget {
                   '${professional.firstName} ${professional.lastName}',
               'profession':
                   professional.professionName ?? 'Professional',
+              'id': professional.id,
+              'categoryId': professional.categoryId ?? '',
+              'professionId': professional.professionId ?? '',
             },
           );
         },

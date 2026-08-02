@@ -400,30 +400,31 @@ export class AuthController {
   )=>{
 
     try{
-
-
       const {role}
       = req.body as SelectRoleRequestDto;
 
+      const {
+  user,
+  accessToken,
+  refreshToken,
+} = await this.authService.selectRole(
+  req.user!.id,
+  role
+);
 
+res.status(200).json({
+  success: true,
 
-      const user =
-      await this.authService.selectRole(
-        req.user!.id,
-        role
-      );
+  data: {
+    user,
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  },
 
-
-
-      res.status(200).json({
-
-        success:true,
-        data:user,
-        message:"Role selected successfully",
-        errors:null,
-        timestamp:new Date().toISOString()
-
-      });
+  message: "Role selected successfully",
+  errors: null,
+  timestamp: new Date().toISOString(),
+});
 
 
 

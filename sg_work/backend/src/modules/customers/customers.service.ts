@@ -4,6 +4,7 @@ import { ProfessionsService } from '../professionals/profession.service';
 import { pointToGeoJSON } from '../../shared/utils/geo.utils';
 import { AppError, NotFoundError, ConflictError } from '../../shared/utils/AppError';
 import { ServiceRequest, Job } from '@prisma/client';
+import { eventBus } from '../../shared/events/event-bus';
 
 export class CustomersService {
   private repository: CustomersRepository;
@@ -26,6 +27,11 @@ export class CustomersService {
       latitude: number;
       longitude: number;
       address?: string;
+      professional_id?: string;  // Direct booking to a specific professional
+      budget?: number;
+      preferred_date?: string;
+      preferred_time?: string;
+      images?: string[];
     },
   ): Promise<ServiceRequest> {
     // Validate that category and profession exist
@@ -33,14 +39,44 @@ export class CustomersService {
     await this.professionsService.getById(data.profession_id);
 
     const location = pointToGeoJSON(data.latitude, data.longitude);
-    return this.repository.createRequest({
+    
+    // Create the service request (always as pending)
+    const request = await this.repository.createRequest({
       customer_id: customerId,
       category_id: data.category_id,
       profession_id: data.profession_id,
       description: data.description,
       location,
       address: data.address,
+      budget: data.budget,
+      preferred_date: data.preferred_date ? new Date(data.preferred_date) : undefined,
+      preferred_time: data.preferred_time,
+      images: data.images ?? [],
     });
+
+    // If a specific professional was selected, create a direct RequestOffer
+    if (data.professional_id) {
+      await this.repository.createDirectOffer({
+        request_id: request.id,
+        professional_id: data.professional_id,
+      });
+
+      // Emit event for real-time notification via Socket.IO
+      eventBus.emit('booking:new_request', {
+        requestId: request.id,
+        professionalId: data.professional_id,
+        customerId,
+        categoryId: data.category_id,
+        professionId: data.profession_id,
+        description: data.description,
+        address: data.address,
+        budget: data.budget,
+        preferredDate: data.preferred_date,
+        preferredTime: data.preferred_time,
+      });
+    }
+
+    return request;
   }
 
   async getCustomerRequests(customerId: string, status?: string): Promise<ServiceRequest[]> {

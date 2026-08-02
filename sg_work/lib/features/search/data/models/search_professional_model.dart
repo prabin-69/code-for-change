@@ -9,6 +9,8 @@ class SearchProfessionalModel extends SearchProfessional {
     super.photoUrl,
     super.phoneNumber,
     super.bio,
+    super.categoryId,
+    super.professionId,
     super.categoryName,
     super.professionName,
     required super.rating,
@@ -43,6 +45,14 @@ class SearchProfessionalModel extends SearchProfessional {
           json['user']?['phone_number'],
 
       bio: json['bio'],
+
+      categoryId:
+          json['category_id'] ??
+          json['category']?['id'],
+
+      professionId:
+          json['profession_id'] ??
+          json['profession']?['id'],
 
       categoryName:
           json['category_name'] ??

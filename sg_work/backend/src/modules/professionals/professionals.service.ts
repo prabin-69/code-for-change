@@ -3,6 +3,7 @@ import { AuthRepository } from '../auth/auth.repository';
 import { NotFoundError, BadRequestError, ConflictError, AppError } from '../../shared/utils/AppError';
 import { ProfessionalProfile, Job } from '@prisma/client';
 import prisma from '../../config/database';
+import { eventBus } from '../../shared/events/event-bus';
 
 export class ProfessionalsService {
   private repository: ProfessionalsRepository;
@@ -112,7 +113,47 @@ export class ProfessionalsService {
     if (profile.availability !== 'available') {
       throw new BadRequestError('You are not available to accept requests');
     }
-    return this.repository.getPendingRequestsNearby(lat, lng, radiusKm, userId);
+    // Get both nearby requests (existing) and direct offers (new)
+    const nearbyRequests = await this.repository.getPendingRequestsNearby(lat, lng, radiusKm, userId);
+    const directOffers = await this.repository.getDirectOffers(userId);
+    
+    // Merge: include requests that were directly assigned to this professional
+    // Filter out duplicates (a request might be both nearby AND directly assigned)
+    const seenIds = new Set(nearbyRequests.map((r: any) => r.id));
+    
+    // Add direct offer requests that are NOT already in nearby results
+    for (const offer of directOffers) {
+      const reqId = (offer as any).request_id || (offer.request?.id);
+      if (reqId && !seenIds.has(reqId)) {
+        nearbyRequests.push(offer.request || offer);
+        seenIds.add(reqId);
+      }
+    }
+    
+    return nearbyRequests;
+  }
+
+  async rejectRequest(userId: string, requestId: string): Promise<void> {
+    // Update the direct offer status to 'rejected' if exists
+    await prisma.requestOffer.updateMany({
+      where: { request_id: requestId, professional_id: userId },
+      data: { response: 'rejected', accepted_at: new Date() },
+    });
+
+    // Get the request to find the customer
+    const request = await prisma.serviceRequest.findUnique({
+      where: { id: requestId },
+      select: { customer_id: true, status: true },
+    });
+
+    if (!request) throw new NotFoundError('Request not found');
+
+    // Emit real-time event that booking was rejected
+    eventBus.emit('booking:rejected', {
+      requestId,
+      professionalId: userId,
+      customerId: request.customer_id,
+    });
   }
 
   async acceptRequest(userId: string, requestId: string): Promise<Job> {
@@ -123,18 +164,13 @@ export class ProfessionalsService {
     }
 
     // 2. Atomically transition the request from 'pending' → 'accepted'.
-    //    Using updateMany with a conditional where clause prevents the
-    //    race condition where two professionals accept simultaneously:
-    //    only one transaction will find status='pending' and win.
     const job = await prisma.$transaction(async (tx) => {
-      // Conditional update: succeeds only if the request is still pending
       const updateResult = await tx.serviceRequest.updateMany({
         where: { id: requestId, status: 'pending' },
         data: { status: 'accepted', accepted_by: userId },
       });
 
       if (updateResult.count === 0) {
-        // Either the request doesn't exist or was already accepted
         const existing = await tx.serviceRequest.findUnique({
           where: { id: requestId },
           select: { id: true, status: true },
@@ -143,7 +179,6 @@ export class ProfessionalsService {
         throw new ConflictError('Request was already accepted by another professional');
       }
 
-      // Fetch the accepted request to retrieve customer_id
       const request = await tx.serviceRequest.findUnique({
         where: { id: requestId },
         select: { customer_id: true },
@@ -164,10 +199,24 @@ export class ProfessionalsService {
         data: { total_jobs: { increment: 1 } },
       });
 
-      return newJob;
+      // Update the direct offer status to 'accepted' if exists
+      await tx.requestOffer.updateMany({
+        where: { request_id: requestId, professional_id: userId },
+        data: { response: 'accepted', accepted_at: new Date() },
+      });
+
+      return { newJob, customerId: request!.customer_id };
     });
 
-    return job;
+    // Emit real-time event that booking was accepted
+    eventBus.emit('booking:accepted', {
+      jobId: (job as any).newJob.id,
+      requestId,
+      professionalId: userId,
+      customerId: (job as any).customerId,
+    });
+
+    return (job as any).newJob;
   }
 
   async getMyJobs(userId: string, status?: string): Promise<Job[]> {

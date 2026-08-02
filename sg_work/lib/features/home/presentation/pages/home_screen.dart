@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
           if (role == "PROFESSIONAL") {
             context.go(RouteConstants.professionalHome);
           } else {
-            context.go(RouteConstants.customerHome);
+            context.go(RouteConstants.home);
           }
         }
       },

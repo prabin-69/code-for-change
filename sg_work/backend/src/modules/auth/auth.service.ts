@@ -227,50 +227,70 @@ export class AuthService {
 
 
 
-  // ==========================
-  // SELECT ROLE
-  // ==========================
-  async selectRole(
-    userId:string,
-    role:'CUSTOMER'|'PROFESSIONAL'
-  ):Promise<User>{
+// ==========================
+// SELECT ROLE
+// ==========================
+async selectRole(
+  userId: string,
+  role: 'CUSTOMER' | 'PROFESSIONAL'
+): Promise<{
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+}> {
 
+  const user = await this.repository.findUserById(userId);
 
-    const user =
-      await this.repository.findUserById(userId);
+  if (!user) {
+    throw new AppError(
+      'User not found',
+      404
+    );
+  }
 
+  if (user.role_selected) {
+    throw new AppError(
+      'Role already selected',
+      400
+    );
+  }
 
-
-    if(!user){
-
-      throw new AppError(
-        'User not found',
-        404
-      );
-
-    }
-
-
-
-    if(user.role_selected){
-
-      throw new AppError(
-        'Role already selected',
-        400
-      );
-
-    }
-
-
-
-    return this.repository.updateUserRole(
+  const updatedUser =
+    await this.repository.updateUserRole(
       userId,
       role
     );
 
-  }
+  const accessToken =
+    TokenService.generateAccessToken({
+      userId: updatedUser.id,
+      role: updatedUser.role,
+    });
 
+  const {
+    token: refreshToken,
+    hash: refreshHash,
+  } = TokenService.generateRefreshToken();
 
+  const expiresAt = new Date();
+
+  expiresAt.setDate(
+    expiresAt.getDate() + 7
+  );
+
+  await this.repository.saveRefreshToken({
+    userId: updatedUser.id,
+    tokenHash: refreshHash,
+    deviceInfo: {},
+    expiresAt,
+  });
+
+  return {
+    user: updatedUser,
+    accessToken,
+    refreshToken,
+  };
+}
 
 
 

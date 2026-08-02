@@ -9,7 +9,7 @@ class CustomerRemoteDataSource {
 
   CustomerRemoteDataSource({required this.dio});
 
-  static const String _base = '/api/v1';
+  static const String _base = '/api/v1/customers';
 
   Future<List<CategoryModel>> getCategories() async {
     final response = await dio.get('$_base/categories');
@@ -42,7 +42,7 @@ class CustomerRemoteDataSource {
   }
 
   Future<ServiceRequestModel> cancelRequest(String id, {String? reason}) async {
-    final response = await dio.patch(
+    final response = await dio.put(
       '$_base/requests/$id/cancel',
       data: reason != null ? {'reason': reason} : null,
     );

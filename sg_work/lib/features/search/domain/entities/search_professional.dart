@@ -5,6 +5,8 @@ class SearchProfessional {
   final String? photoUrl;
   final String? phoneNumber;
   final String? bio;
+  final String? categoryId;
+  final String? professionId;
   final String? categoryName;
   final String? professionName;
   final double rating;
@@ -19,6 +21,8 @@ class SearchProfessional {
     this.photoUrl,
     this.phoneNumber,
     this.bio,
+    this.categoryId,
+    this.professionId,
     this.categoryName,
     this.professionName,
     required this.rating,

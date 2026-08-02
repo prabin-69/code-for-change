@@ -224,6 +224,23 @@ export class ProfessionalsController {
     }
   };
 
+  rejectRequest = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user!.id;
+      const { requestId } = req.params;
+      await this.service.rejectRequest(userId, requestId);
+      res.status(200).json({
+        success: true,
+        data: null,
+        message: 'Request rejected',
+        errors: null,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   acceptRequest = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;

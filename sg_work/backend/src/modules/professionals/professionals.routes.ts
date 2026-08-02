@@ -32,6 +32,7 @@ router.delete('/portfolio/:id', controller.deletePortfolio);
 // Jobs & Requests
 router.get('/requests/pending', controller.getPendingRequests);
 router.post('/requests/:requestId/accept', controller.acceptRequest);
+router.post('/requests/:requestId/reject', controller.rejectRequest);
 router.get('/jobs', controller.getMyJobs);
 router.get('/jobs/:jobId', controller.getJobDetails);
 router.put('/jobs/:jobId/status', controller.updateJobStatus);
